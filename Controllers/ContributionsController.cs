@@ -10,6 +10,7 @@ using FourtitudeIntegrated.Models;
 using AutoMapper;
 using FourtitudeIntegrated.Cache;
 using FourtitudeIntegrated.AutoMapper;
+using FourtitudeIntegrated.Services;
 
 namespace FourtitudeIntegrated.Controllers
 {
@@ -18,10 +19,12 @@ namespace FourtitudeIntegrated.Controllers
     public class ContributionsController : ControllerBase
     {
         private readonly FourtitudeIntegratedContext _context;
+        private readonly TransactionService transactionService;
 
-        public ContributionsController(FourtitudeIntegratedContext context)
+        public ContributionsController(FourtitudeIntegratedContext context, TransactionService transactionService)
         {
             _context = context;
+            this.transactionService = transactionService;
         }
 
         private static Mapper mapper = MapperConfig.InitializeAutomapper();
@@ -34,7 +37,8 @@ namespace FourtitudeIntegrated.Controllers
           {
               return NotFound();
           }
-            var acc = await _context.Accounts.Where(a => a.AccountTypeId == 5).ToListAsync();
+            //var acc = await _context.Accounts.Where(a => a.AccountTypeId == 5).ToListAsync();
+            var acc = await _context.Accounts.ToListAsync();
             var cont = await _context.Contributions.ToListAsync();
             var res = new List<ContributionsDTODetails>();
 
@@ -78,13 +82,12 @@ namespace FourtitudeIntegrated.Controllers
         // PUT: api/Contributions/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContributions(string id, ContributionsDTO ContributionsUpdated)
+        public async Task<IActionResult> PutContributions(int id, ContributionsDTO ContributionsUpdated)
         {
             if (id != ContributionsUpdated.ContributionId)
             {
                 return BadRequest();
             }
-
 
             var Contributions = mapper.Map<Contributions>(ContributionsUpdated);
 
@@ -107,6 +110,78 @@ namespace FourtitudeIntegrated.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> MakeContributions(ContributionsPayment ContributionsPaid)
+        {
+            //if (contributionId != ContributionsPaid.ContributionId)
+            //{
+            //    return BadRequest();
+            //}
+
+            //Not sure about this logic
+            //var acc = await _context.Accounts.FindAsync(ContributionsPaid.AccountId);
+
+            //if (acc.AccountBalance < ContributionsPaid.AmountPaid)
+            //{
+            //    return Problem($"Insufficient funds for account {acc.AccountId} {acc.AccountName}");
+            //}
+
+            var contributionRecord = await _context.Contributions.FindAsync(ContributionsPaid.ContributionId);
+
+            int DaysOverdue = (int)Math.Ceiling((((TimeSpan)(ContributionsPaid.DateOfPayment - contributionRecord.DateDue)).TotalDays)) - 1;
+
+            contributionRecord.PenaltyDue = GetPenalty(contributionRecord.AmountDue, DaysOverdue);
+
+            contributionRecord.AmountPaid = ContributionsPaid.AmountPaid + contributionRecord.AmountPaid;
+
+            if(contributionRecord.AmountPaid == contributionRecord.PenaltyDue + contributionRecord.AmountDue)
+            {
+                contributionRecord.Status = Enum.ContributionStatus.Cleared;
+            }
+            else
+            {
+                contributionRecord.Status = Enum.ContributionStatus.Partial;
+            }
+
+            contributionRecord.Status = contributionRecord.Balance == 0 ? Enum.ContributionStatus.Cleared : Enum.ContributionStatus.Partial;
+
+            _context.Entry(contributionRecord).State = EntityState.Modified;
+
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ContributionsExists(ContributionsPaid.ContributionId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            var res = await transactionService.AddTransaction(new NewTransacton()
+            {
+                AccountFrom = ContributionsPaid.AccountId,
+                AccountTo = 1001, //Main equity/bank account
+                TransactionDetails = new TransactionsDTO()
+                {
+                    TransactionDate = ContributionsPaid.DateOfPayment,
+                    TransactionType = Enum.TransactionType.Transfer,
+                    TransactionRef = ContributionsPaid.TransactionRef,
+                    UserId = ContributionsPaid.UserId,
+                    Amount = ContributionsPaid.AmountPaid,
+                    Description = "Contribution payment"
+                }
+            });
+
+                return NoContent();
         }
 
         // POST: api/Contributions
@@ -162,9 +237,14 @@ namespace FourtitudeIntegrated.Controllers
         }
 
 
-        private bool ContributionsExists(string id)
+        private bool ContributionsExists(int id)
         {
             return (_context.Contributions?.Any(e => e.ContributionId == id)).GetValueOrDefault();
+        }
+
+        private decimal GetPenalty(decimal principal, int duration)
+        {
+            return Math.Round((principal * (decimal)Math.Pow((double)(1 + 0.01 / 1), (double)(1 * duration)) - principal), 2);
         }
     }
 }

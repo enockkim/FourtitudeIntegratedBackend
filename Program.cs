@@ -1,4 +1,5 @@
 using FourtitudeIntegrated.DbContexts;
+using FourtitudeIntegrated.Services;
 using FourtitudeIntegrated.Workers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -34,6 +35,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHostedService<ContributionsWorker>();
 builder.Services.AddHostedService<PenaltyWorker>();
+builder.Services.AddScoped<TransactionService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

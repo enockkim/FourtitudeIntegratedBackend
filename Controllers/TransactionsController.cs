@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using FourtitudeIntegrated.Models;
 using FourtitudeIntegrated.DbContexts;
 using Microsoft.CodeAnalysis.Differencing;
+using System.Diagnostics.Eventing.Reader;
+using FourtitudeIntegrated.Services;
 
 namespace FourtitudeIntegrated.Controllers
 {
@@ -16,10 +18,12 @@ namespace FourtitudeIntegrated.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly FourtitudeIntegratedContext _context;
+        private readonly TransactionService transactionService;
 
-        public TransactionsController(FourtitudeIntegratedContext context)
+        public TransactionsController(FourtitudeIntegratedContext context, TransactionService transactionService)
         {
             _context = context;
+            this.transactionService = transactionService;
         }
 
         // GET: api/Transactions
@@ -111,76 +115,9 @@ namespace FourtitudeIntegrated.Controllers
               return Problem("Entity set 'FourtitudeIntegratedContext.Transactions'  is null.");
           }
 
-            List<GeneralLedger> GeneralLedgerEntries = new List<GeneralLedger>();
+          var res = await transactionService.AddTransaction(NewTransaction);
 
-            //Create a transaction record
-            Transactions Transactions = _context.Transactions.Add(new Transactions()
-            {
-                TransactionDate = NewTransaction.TransactionDetails.TransactionDate,
-                TransactionType = NewTransaction.TransactionDetails.TransactionType,
-                Description = NewTransaction.TransactionDetails.Description,
-                TransactionRef = NewTransaction.TransactionDetails.TransactionRef,
-            }).Entity;
-
-            await _context.SaveChangesAsync();
-
-            //Create a general ledger entry
-            if (NewTransaction.TransactionDetails.TransactionType == Enum.TransactionType.Transfer)
-            {
-                //Debit
-                var debit = new GeneralLedger()
-                {
-                    AccountId = (int)NewTransaction.AccountTo,
-                    Amount = NewTransaction.TransactionDetails.Amount,
-                    UserId = NewTransaction.TransactionDetails.UserId,
-                    TransactionId = Transactions.TransactionId,
-                    EntryType = Enum.EntryType.Debit
-                };
-                GeneralLedgerEntries.Add(debit);
-
-                //Credit
-                var credit = new GeneralLedger()
-                {
-                    AccountId = (int)NewTransaction.AccountFrom,
-                    Amount = NewTransaction.TransactionDetails.Amount,
-                    UserId = NewTransaction.TransactionDetails.UserId,
-                    TransactionId = Transactions.TransactionId,
-                    EntryType = Enum.EntryType.Credit
-                };
-                GeneralLedgerEntries.Add(credit);
-            }
-            else
-            {
-                var DepositOrWithdrawal = new GeneralLedger()
-                {
-                    AccountId = (int)(NewTransaction.AccountFrom ?? NewTransaction.AccountTo),
-                    Amount = NewTransaction.TransactionDetails.Amount,
-                    UserId = NewTransaction.TransactionDetails.UserId,
-                    TransactionId = Transactions.TransactionId,
-                    EntryType = NewTransaction.TransactionDetails.TransactionType == Enum.TransactionType.Withdrawal ? Enum.EntryType.Credit : Enum.EntryType.Debit
-                };
-                GeneralLedgerEntries.Add(DepositOrWithdrawal);
-            }
-
-            foreach(var entry in GeneralLedgerEntries)
-            {
-                _context.GeneralLedger.Add(entry);
-            }
-
-            await _context.SaveChangesAsync();
-
-            ViewTransactionsDTO viewTransactionsDTO = new ViewTransactionsDTO()
-            {
-                TransactionId = Transactions.TransactionId,
-                TransactionDate = Transactions.TransactionDate,
-                TransactionRef = Transactions.TransactionRef,
-                Description = Transactions.Description,
-                TransactionType = Transactions.TransactionType.ToString(),
-                Amount = NewTransaction.TransactionDetails.Amount,
-                //AccountId = Transactions.
-            };
-
-            return CreatedAtAction("GetTransactions", new { id = viewTransactionsDTO.TransactionId }, viewTransactionsDTO);
+          return CreatedAtAction("GetTransactions", new { id = res.TransactionId }, res);
         }
 
         // DELETE: api/Transactions/5

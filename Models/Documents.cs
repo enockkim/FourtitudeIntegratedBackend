@@ -10,7 +10,7 @@ namespace FourtitudeIntegrated.Models
         public int DocumentId { get; set; }
         [ForeignKey("Transactions")]
         public long TransactionId { get; set; }
-        [ForeignKey("Documents")]
+        [ForeignKey("DocumentTypes")]
         public int DocumentTypeId { get; set; }
         public DateOnly DocumentDate { get; set; }
         public int DocumentNo { get; set; }
@@ -20,7 +20,7 @@ namespace FourtitudeIntegrated.Models
         public int CreatedBy { get; set; }
         public DateTime DateUpdated { get; set; }
         public int UptdatedBy { get; set; }
-        public virtual Transactions Transactions { get; set; }
+        public Transactions Transactions { get; set; }
         public DocumentTypes DocumentTypes { get; set; }
     }
 }

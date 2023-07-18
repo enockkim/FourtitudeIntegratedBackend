@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FourtitudeIntegrated.Migrations
 {
     [DbContext(typeof(FourtitudeIntegratedContext))]
-    [Migration("20230709181716_UpdatedEntryType")]
-    partial class UpdatedEntryType
+    [Migration("20230716155944_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -105,13 +105,11 @@ namespace FourtitudeIntegrated.Migrations
 
             modelBuilder.Entity("FourtitudeIntegrated.Models.Contributions", b =>
                 {
-                    b.Property<string>("ContributionId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("AccountId")
+                    b.Property<int>("ContributionId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int>("AccountsAccountId")
+                    b.Property<int>("AccountId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("AmountDue")
@@ -134,7 +132,7 @@ namespace FourtitudeIntegrated.Migrations
 
                     b.HasKey("ContributionId");
 
-                    b.HasIndex("AccountsAccountId");
+                    b.HasIndex("AccountId");
 
                     b.ToTable("Contributions");
                 });
@@ -191,9 +189,6 @@ namespace FourtitudeIntegrated.Migrations
                     b.Property<int>("DocumentTypeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DocumentTypesDocumentTypeId")
-                        .HasColumnType("int");
-
                     b.Property<long>("TransactionId")
                         .HasColumnType("bigint");
 
@@ -202,7 +197,7 @@ namespace FourtitudeIntegrated.Migrations
 
                     b.HasKey("DocumentId");
 
-                    b.HasIndex("DocumentTypesDocumentTypeId");
+                    b.HasIndex("DocumentTypeId");
 
                     b.HasIndex("TransactionId")
                         .IsUnique();
@@ -236,8 +231,7 @@ namespace FourtitudeIntegrated.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("TransactionId")
-                        .IsUnique();
+                    b.HasIndex("TransactionId");
 
                     b.ToTable("GeneralLedger");
                 });
@@ -290,7 +284,7 @@ namespace FourtitudeIntegrated.Migrations
                 {
                     b.HasOne("FourtitudeIntegrated.Models.Accounts", "Accounts")
                         .WithMany("Contributions")
-                        .HasForeignKey("AccountsAccountId")
+                        .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -312,7 +306,7 @@ namespace FourtitudeIntegrated.Migrations
                 {
                     b.HasOne("FourtitudeIntegrated.Models.DocumentTypes", "DocumentTypes")
                         .WithMany("Documents")
-                        .HasForeignKey("DocumentTypesDocumentTypeId")
+                        .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -336,8 +330,8 @@ namespace FourtitudeIntegrated.Migrations
                         .IsRequired();
 
                     b.HasOne("FourtitudeIntegrated.Models.Transactions", "Transactions")
-                        .WithOne("GeneralLedgerEntry")
-                        .HasForeignKey("FourtitudeIntegrated.Models.GeneralLedger", "TransactionId")
+                        .WithMany("GeneralLedgerEntry")
+                        .HasForeignKey("TransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -373,8 +367,7 @@ namespace FourtitudeIntegrated.Migrations
                     b.Navigation("Document")
                         .IsRequired();
 
-                    b.Navigation("GeneralLedgerEntry")
-                        .IsRequired();
+                    b.Navigation("GeneralLedgerEntry");
                 });
 #pragma warning restore 612, 618
         }

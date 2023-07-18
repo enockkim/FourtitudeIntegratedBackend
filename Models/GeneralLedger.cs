@@ -15,8 +15,9 @@ namespace FourtitudeIntegrated.Models
         public int AccountId { get; set; }
         public decimal Amount { get; set; }
         public string UserId { get; set; }
+        public DateTime EntryDateTime { get; set; }
         public EntryType EntryType { get; set; }
         public virtual Transactions Transactions { get; set; }
-        public Accounts Accounts { get; set; }
+        public virtual Accounts Accounts { get; set; }
     }
 }

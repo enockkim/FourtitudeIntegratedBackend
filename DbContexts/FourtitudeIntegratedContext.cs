@@ -14,8 +14,12 @@ namespace FourtitudeIntegrated.DbContexts
         public DbSet<Contributions> Contributions { set; get; }
         public DbSet<AccountCategories> AccountCategories { set; get; }
         public DbSet<AccountTypes> AccountTypes { get; set; } = default!;
+        public DbSet<Loans> Loans { set; get; }
+        public DbSet<LoanTransactions> LoanTransactions { set; get; }
+        public DbSet<ContributionPayments> ContributionPayments { set; get; }
         public FourtitudeIntegratedContext(DbContextOptions<FourtitudeIntegratedContext> options) : base(options)
         {
+
         }
     }
 }

@@ -80,9 +80,9 @@ namespace FourtitudeIntegrated.Workers
 
                         url = "https://localhost:7159/api/Contributions";
 
-                        string currentMonth = DateTime.Now.ToString("MM");
-                        string currentYear = DateTime.Now.ToString("yy");
-                        string contributionId = account.AccId + currentMonth + currentYear;
+                        int currentMonth = Convert.ToInt16(DateTime.Now.ToString("MM"));
+                        int currentYear = Convert.ToInt16(DateTime.Now.ToString("yy"));
+                        int contributionId = Convert.ToInt32($"{account.AccId}{currentMonth}{currentYear}");
 
                         // Create the request body as needed
                         var requestBody = new ContributionsDTO
@@ -95,7 +95,6 @@ namespace FourtitudeIntegrated.Workers
                             Status = 0,
                             DateDue = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 6, 0, 0, 0)
                         };
-
 
                         // Convert the request body to JSON
                         var jsonRequestBody = new StringContent(

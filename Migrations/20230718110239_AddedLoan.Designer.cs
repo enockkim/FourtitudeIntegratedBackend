@@ -3,6 +3,7 @@ using System;
 using FourtitudeIntegrated.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FourtitudeIntegrated.Migrations
 {
     [DbContext(typeof(FourtitudeIntegratedContext))]
-    partial class FourtitudeIntegratedContextModelSnapshot : ModelSnapshot
+    [Migration("20230718110239_AddedLoan")]
+    partial class AddedLoan
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,31 +101,6 @@ namespace FourtitudeIntegrated.Migrations
                     b.HasIndex("AccountTypeId");
 
                     b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("FourtitudeIntegrated.Models.ContributionPayments", b =>
-                {
-                    b.Property<int>("ContributionPaymentsId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("ContributionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GeneralLedgerEntry")
-                        .HasColumnType("int");
-
-                    b.HasKey("ContributionPaymentsId");
-
-                    b.HasIndex("ContributionId");
-
-                    b.HasIndex("GeneralLedgerEntry");
-
-                    b.ToTable("ContributionPayments");
                 });
 
             modelBuilder.Entity("FourtitudeIntegrated.Models.Contributions", b =>
@@ -264,77 +242,6 @@ namespace FourtitudeIntegrated.Migrations
                     b.ToTable("GeneralLedger");
                 });
 
-            modelBuilder.Entity("FourtitudeIntegrated.Models.LoanTransactions", b =>
-                {
-                    b.Property<int>("LoanTransactionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("GeneralLedgerEntry")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LoanId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LoanTransactionType")
-                        .HasColumnType("int");
-
-                    b.HasKey("LoanTransactionId");
-
-                    b.HasIndex("GeneralLedgerEntry");
-
-                    b.HasIndex("LoanId");
-
-                    b.ToTable("LoanTransactions");
-                });
-
-            modelBuilder.Entity("FourtitudeIntegrated.Models.Loans", b =>
-                {
-                    b.Property<int>("LoanId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("AmountBorrowed")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("AmountPaid")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime?>("DateDue")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime?>("DateOfLastPayment")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<decimal>("InterestDue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("InterestRate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PenaltyDue")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("PenaltyStatus")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.HasKey("LoanId");
-
-                    b.HasIndex("AccountId");
-
-                    b.ToTable("Loans");
-                });
-
             modelBuilder.Entity("FourtitudeIntegrated.Models.Transactions", b =>
                 {
                     b.Property<long>("TransactionId")
@@ -380,25 +287,6 @@ namespace FourtitudeIntegrated.Migrations
                     b.Navigation("AccountCategory");
 
                     b.Navigation("AccountTypes");
-                });
-
-            modelBuilder.Entity("FourtitudeIntegrated.Models.ContributionPayments", b =>
-                {
-                    b.HasOne("FourtitudeIntegrated.Models.Contributions", "Contributions")
-                        .WithMany()
-                        .HasForeignKey("ContributionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FourtitudeIntegrated.Models.GeneralLedger", "GeneralLedger")
-                        .WithMany()
-                        .HasForeignKey("GeneralLedgerEntry")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contributions");
-
-                    b.Navigation("GeneralLedger");
                 });
 
             modelBuilder.Entity("FourtitudeIntegrated.Models.Contributions", b =>
@@ -459,36 +347,6 @@ namespace FourtitudeIntegrated.Migrations
                     b.Navigation("Accounts");
 
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("FourtitudeIntegrated.Models.LoanTransactions", b =>
-                {
-                    b.HasOne("FourtitudeIntegrated.Models.GeneralLedger", "GeneralLedger")
-                        .WithMany()
-                        .HasForeignKey("GeneralLedgerEntry")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("FourtitudeIntegrated.Models.Loans", "Loans")
-                        .WithMany()
-                        .HasForeignKey("LoanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GeneralLedger");
-
-                    b.Navigation("Loans");
-                });
-
-            modelBuilder.Entity("FourtitudeIntegrated.Models.Loans", b =>
-                {
-                    b.HasOne("FourtitudeIntegrated.Models.Accounts", "Accounts")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Accounts");
                 });
 
             modelBuilder.Entity("FourtitudeIntegrated.Models.AccountCategories", b =>

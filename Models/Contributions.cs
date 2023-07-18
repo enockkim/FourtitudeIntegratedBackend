@@ -7,21 +7,23 @@ namespace FourtitudeIntegrated.Models
     public class Contributions
     {
         [Key]
-        public string ContributionId { get; set; }
+        public int ContributionId { get; set; }
+        [ForeignKey("Accounts")]
         public int AccountId { get; set; }
         public decimal AmountDue { get; set; }
         public decimal PenaltyDue { get; set; }
         public decimal AmountPaid { get; set; }
         public decimal Balance { get { return AmountDue + PenaltyDue - AmountPaid; } }
+        public bool PenaltyWaived { get; set; } = false;
         public DateTime? DateOfLastPayment { get; set; }
         public DateTime? DateDue { get; set; }
         public ContributionStatus Status { get; set; }
-        public Accounts Accounts { get; set; } = null!;
+        public Accounts Accounts { get; set; }
     }
 
     public class ContributionsDTO
     {
-        public string ContributionId { get; set; }
+        public int ContributionId { get; set; }
         public int AccountId { get; set; }
         public decimal AmountDue { get; set; }
         public decimal PenaltyDue { get; set; }
@@ -33,7 +35,7 @@ namespace FourtitudeIntegrated.Models
     }
     public class ContributionsDTODetails
     {
-        public string ContributionId { get; set; }
+        public int ContributionId { get; set; }
         public int AccId { get; set; }
         public string AccName { get; set; }
         public decimal AmountDue { get; set; }
@@ -43,5 +45,14 @@ namespace FourtitudeIntegrated.Models
         public DateTime? DateOfLastPayment { get; set; }
         public DateTime? DateDue { get; set; }
         public string Status { get; set; }
+    }
+    public class ContributionsPayment
+    {
+        public int ContributionId { get; set; }
+        public int AccountId { get; set; }
+        public string UserId { get; set; }
+        public decimal AmountPaid { get; set; }
+        public string TransactionRef { get; set; }
+        public DateTime DateOfPayment { get; set; }
     }
 }

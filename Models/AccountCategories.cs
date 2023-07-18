@@ -8,7 +8,7 @@ namespace FourtitudeIntegrated.Models
         public int AccountCategoryId { get; set; }
         public string CategoryName { get; set; }
         public string Description { get; set; }
-        public virtual ICollection<Accounts> Accounts { get; set; } = new List<Accounts>();
+        public virtual ICollection<Accounts> Accounts { get; set; }
     }
 
     public class AccountCategoriesDTO

@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace FourtitudeIntegrated.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdatedEntryType : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -132,15 +132,14 @@ namespace FourtitudeIntegrated.Migrations
                     DateCreated = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
                     DateUpdated = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    UptdatedBy = table.Column<int>(type: "int", nullable: false),
-                    DocumentTypesDocumentTypeId = table.Column<int>(type: "int", nullable: false)
+                    UptdatedBy = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Documents", x => x.DocumentId);
                     table.ForeignKey(
-                        name: "FK_Documents_DocumentTypes_DocumentTypesDocumentTypeId",
-                        column: x => x.DocumentTypesDocumentTypeId,
+                        name: "FK_Documents_DocumentTypes_DocumentTypeId",
+                        column: x => x.DocumentTypeId,
                         principalTable: "DocumentTypes",
                         principalColumn: "DocumentTypeId",
                         onDelete: ReferentialAction.Cascade);
@@ -157,22 +156,22 @@ namespace FourtitudeIntegrated.Migrations
                 name: "Contributions",
                 columns: table => new
                 {
-                    ContributionId = table.Column<string>(type: "varchar(255)", nullable: false),
+                    ContributionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
                     AccountId = table.Column<int>(type: "int", nullable: false),
                     AmountDue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PenaltyDue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     AmountPaid = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     DateOfLastPayment = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     DateDue = table.Column<DateTime>(type: "datetime(6)", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    AccountsAccountId = table.Column<int>(type: "int", nullable: false)
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Contributions", x => x.ContributionId);
                     table.ForeignKey(
-                        name: "FK_Contributions_Accounts_AccountsAccountId",
-                        column: x => x.AccountsAccountId,
+                        name: "FK_Contributions_Accounts_AccountId",
+                        column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "AccountId",
                         onDelete: ReferentialAction.Cascade);
@@ -220,14 +219,14 @@ namespace FourtitudeIntegrated.Migrations
                 column: "AccountTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Contributions_AccountsAccountId",
+                name: "IX_Contributions_AccountId",
                 table: "Contributions",
-                column: "AccountsAccountId");
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Documents_DocumentTypesDocumentTypeId",
+                name: "IX_Documents_DocumentTypeId",
                 table: "Documents",
-                column: "DocumentTypesDocumentTypeId");
+                column: "DocumentTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Documents_TransactionId",
@@ -248,8 +247,7 @@ namespace FourtitudeIntegrated.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GeneralLedger_TransactionId",
                 table: "GeneralLedger",
-                column: "TransactionId",
-                unique: true);
+                column: "TransactionId");
         }
 
         /// <inheritdoc />

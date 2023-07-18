@@ -9,11 +9,12 @@ namespace FourtitudeIntegrated.Models
         [Key]
         public long TransactionId { get; set; }
         public DateTime TransactionDate { get; set; }
+        public DateTime CreatedDate { get; set; }
         public string Description { get; set; }
         public string TransactionRef { get; set; }
         public TransactionType TransactionType { get; set; }
-        public virtual Documents Document { get; set; }
-        public virtual GeneralLedger GeneralLedgerEntry { get; set; }
+        public Documents Document { get; set; }
+        public ICollection<GeneralLedger> GeneralLedgerEntry { get; set; }
     }
     public class TransactionsDTO
     {
