@@ -10,6 +10,7 @@ using FourtitudeIntegrated.DbContexts;
 using FourtitudeIntegrated.Cache;
 using FourtitudeIntegrated.AutoMapper;
 using AutoMapper;
+using FourtitudeIntegrated.Services;
 
 namespace FourtitudeIntegrated.Controllers
 {
@@ -18,10 +19,12 @@ namespace FourtitudeIntegrated.Controllers
     public class LoansController : ControllerBase
     {
         private readonly FourtitudeIntegratedContext _context;
+        private readonly LoansService loansService;
 
-        public LoansController(FourtitudeIntegratedContext context)
+        public LoansController(FourtitudeIntegratedContext context, LoansService loansService)
         {
             _context = context;
+            this.loansService = loansService;
         }
 
         private static Mapper mapper = MapperConfig.InitializeAutomapper();
@@ -37,13 +40,10 @@ namespace FourtitudeIntegrated.Controllers
             else if (LocalCache.LoansCache.Count == 0)
             {
                 var Loans = await _context.Loans.ToListAsync();
-                foreach(var loan in Loans)
-                {
-                    LocalCache.LoansCache.Add(loan);
-                }
+                LocalCache.LoansCache = Loans.ToDictionary(l => l.LoanId, l => l);
             }
 
-            return LocalCache.LoansCache;
+            return LocalCache.LoansCache.Values.ToList();
         }
 
         // GET: api/Loans/5
@@ -97,17 +97,47 @@ namespace FourtitudeIntegrated.Controllers
 
         // POST: api/Loans
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Loans>> PostLoans(Loans Loans)
+        [HttpPost("NewLoan")]
+        public async Task<ActionResult<Loans>> PostLoans(NewLoanDTO newLoan)
         {
           if (_context.Loans == null)
           {
               return Problem("Entity set 'FourtitudeIntegratedContext.Loans'  is null.");
           }
-            _context.Loans.Add(Loans);
+            var loan = new Loans()
+            {
+                LoanId = 0,
+                AccountId = newLoan.AccountId,
+                AmountBorrowed = newLoan.AmountBorrowed,
+                InterestRate = newLoan.InterestRate,
+                InterestDue = newLoan.InterestRate * newLoan.AmountBorrowed / 100,
+                PenaltyDue = 0,
+                AmountPaid = 0,
+                DateDue = newLoan.InterestRate != 10 ? newLoan.InterestRate == 15 ? DateTime.Now.AddDays(14) : DateTime.Now.AddDays(30) : DateTime.Now.AddDays(7),
+            };
+
+            _context.Loans.Add(loan);
+
+            LocalCache.LoansCache.Add(loan.LoanId, loan);
+
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetLoans", new { id = Loans.LoanId }, Loans);
+            return CreatedAtAction("GetLoans", new { id = loan.LoanId }, loan);
+        }
+
+        [HttpPost("PayLoan")]
+        public async Task<ActionResult<Loans>> PayLoan(LoanPayment newPayment)
+        {
+            if (_context.Loans == null)
+            {
+                return Problem("Entity set 'FourtitudeIntegratedContext.Loans'  is null.");
+            }
+
+            var loan = await loansService.PayLoan(newPayment);
+
+            LocalCache.LoansCache[loan.LoanId] = loan;
+
+            return CreatedAtAction("GetLoans", new { id = loan.LoanId }, loan);
         }
 
         // DELETE: api/Loans/5

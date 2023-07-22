@@ -36,6 +36,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<ContributionsWorker>();
 builder.Services.AddHostedService<PenaltyWorker>();
 builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<LoansService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

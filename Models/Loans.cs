@@ -19,11 +19,25 @@ namespace FourtitudeIntegrated.Models
         public decimal Balance { get { return AmountBorrowed + PenaltyDue + InterestDue - AmountPaid; } }
         public DateTime? DateOfLastPayment { get; set; }
         public DateTime? DateDue { get; set; }
-        public LoanStatus Status { get; set; }
+        public LoanStatus Status { get; set; } = LoanStatus.Unpaid;
         public Accounts Accounts { get; set; }
     }
 
-    public class LoansDTO
+    public class NewLoanDTO
     {
+        public int AccountId { get; set; }
+        public decimal AmountBorrowed { get; set; }
+        public decimal InterestRate { get; set; }
+        public bool PenaltyStatus { get; set; } = false;
+    }
+
+    public class LoanPayment
+    {
+        public int LoanId { get; set; }
+        public string UserId { get; set; }
+        public decimal AmountPaid { get; set; }
+        public string TransactionRef { get; set; }
+        public string Description { get; set; }
+        public DateTime DateOfPayment { get; set; }
     }
 }
