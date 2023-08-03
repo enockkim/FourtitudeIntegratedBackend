@@ -38,6 +38,8 @@ builder.Services.AddHostedService<PenaltyWorker>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<LoansService>();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = null;
